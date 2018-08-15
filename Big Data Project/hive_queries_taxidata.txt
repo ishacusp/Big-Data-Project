@@ -1,0 +1,34 @@
+QUERIES to Reproduce Analytics
+
+
+ CREATE TABLE taxi_trips(VendorID tinyint,tpep_pickup_datetime string,tpep_dropoff_datetime string,passenger_count smallint,trip_distance double,RateCodeID smallint,store_and_fwd_flag string,dropoff_longitude string,dropoff_latitude string,payment_type string,fare_amount double,extra double,mta_tax double,tip_amount double,tolls_amount double,improvement_surcharge double,total_amount double,Shape_Leng double,Shape_Area double,zone string,LocationID string,borough string) ROW FORMAT delimited fields terminated by ',' STORED AS textfile tblproperties ("skip.header.line.count"="1");
+
+ LOAD DATA INPATH '/user/pa1303/project/taxi_mn.csv' OVERWRITE INTO TABLE taxi_trips;
+
+ CREATE TABLE uber_trips(Dispatching_base_num string,Pickup_date string ,Affiliated_base_num string,locationID string,datetime string,month smallint,Locationids string,borough string,zone string) ROW FORMAT delimited fields terminated by ',' STORED AS textfile tblproperties ("skip.header.line.count"="1");
+
+ LOAD DATA INPATH '/user/pa1303/project/uber_mn.csv' OVERWRITE INTO TABLE taxi_trips;
+
+ CREATE TABLE taxi_mn(tpep_pickup_datetime string,zone string,LocationID string,borough string);
+
+ INSERT INTO TABLE taxi_mn SELECT tpep_pickup_datetime, zone, LocationID, borough FROM taxi_trips;
+
+ CREATE TABLE taxi_counts(zone string, cnts int);
+
+ CREATE TABLE uber_counts(zone string, cnts int);
+
+ INSERT INTO TABLE taxi_counts select zone, count(*) cnts, FROM taxi_mn GROUP BY zone;
+
+ INSERT INTO TABLE uber_counts select zone, count(*) cnts, FROM uber_trips GROUP BY zone;
+
+ create table taxi_diff(zone string, taxi_counts int, uber_counts int, ratio double);
+
+ INSERT INTO TABLE taxi_diff select taxi_counts.zone, taxi_counts.cnts uber_counts.cnts, (taxi_counts.counts / uber_counts.counts) AS ratio uber_cnt FROM taxi_counts JOIN uber_counts ON taxi_counts.zone = uber_counts.zone GROUP BY taxi_mn.zone;
+
+ select avg(ratio) as avg_ratio from taxi_diff;
+
+ select max(ratio) as max_ratio from taxi_diff;
+
+ select percentile(cast(ratio as BIGINT, .5)) as median_ratio from taxi_diff;
+
+ select * from taxi_diff where ratio < 1.0;
