@@ -1,6 +1,6 @@
 # Big-Data-Project
 
-##Identifying Ride Service Hotspots in New York City
+## Identifying Ride Service Hotspots in New York City
 
 With the increase in urban population, city agencies have been struggling to manage their resources efficiently.
 In most of the metropolitan cities, number of people who use public transportation has increased drastically and city agencies
